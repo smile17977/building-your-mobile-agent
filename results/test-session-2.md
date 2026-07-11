@@ -18,8 +18,7 @@ Successfully loaded skill
 
 Both skills are placeholders, so I'll review against the criteria in CLAUDE.md (SwiftUI/MVVM/security) using standard Swift/MVVM best practices. Here is my review.
 
----
-Conclusion
+## Conclusion
 
 Needs work — the ViewModel is close to compliant but has a few MVVM and error-handling gaps worth addressing before merge. Nothing blocking, but the swallowed error and missing private(set) are worth fixing.
 
@@ -40,8 +39,7 @@ Correctly done (no action needed):
 - ✅ defer { isLoading = false } correctly resets loading on all exit paths.
 - ✅ async/await used correctly; no sensitive strings or thread-safety issues spotted.
 
----
-Summary
+## Summary
 
 The RideHistoryViewModel follows the core MVVM shape well — @MainActor, ObservableObject, final, and injected repository dependency are all correct. The two medium items are write-protection on published state (private(set)) and silent error swallowing via try?; the two minor items concern richer state modeling and the title/scope mismatch. Recommend addressing the two 🟡 items before merge.
 
