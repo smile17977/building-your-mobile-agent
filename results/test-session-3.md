@@ -3,7 +3,12 @@
 Review the Swift files in PR #2 https://github.com/nebius-academy-templates/mobile-pr-review-practice for style issues.
 1 skill available
 
-I'm PR Review Agent. I'll review the Swift files in PR #2 for style issues, using the Swift conventions I just drafted. Let me pull the PR.
+I'm PR Review Agent. Let me load the Swift conventions skill and pull PR #2.
+
+⏺ Skill(swift-conventions)
+Successfully loaded skill
+
+The skill has the Swift conventions I drafted earlier baked in. Let me pull the PR.
 
   Ran 1 shell command
 
