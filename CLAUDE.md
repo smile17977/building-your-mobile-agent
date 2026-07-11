@@ -28,4 +28,4 @@ Append a `## Summary` section at the end.
 - After generating the complete review comment always ask a confirmation before posting a comment and a cap on review passes
 - If the PR has no changes, stop and report: "Empty PR"
 - Never approves or merges a PR and never modifies source files
-- Evidence of publish gate (user asked to post; agent asked for confirmation) (transcript should show the 'Post this as a comment' exchange and the agent pausing to confirm)
+- Post your review as a comment
