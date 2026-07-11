@@ -18,24 +18,29 @@ TODO: Swift conventions knowledge skill.
 ## Template
 
 ✅ Compliant
+```swift
 struct UserProfile {
     let displayName: String
     var isVerified: Bool
 
     func fetchAvatar() -> URL? { ... }
 }
+```
 
 ❌ Non-compliant
+```swift
 struct user_profile {          // wrong case for a type
     let str_DisplayName: String // abbreviation + inconsistent case
     var verified: Bool          // boolean doesn't read as an assertion
 
     func GetAvatarURL() -> URL? { ... } // method should be lowerCamelCase
 }
+```
 
 --
 
 ✅ Compliant
+```swift
 @MainActor
 func loadProfile() async {
     do {
@@ -45,8 +50,10 @@ func loadProfile() async {
         self.errorMessage = error.localizedDescription
     }
 }
+```
 
 ❌ Non-compliant
+```swift
 func loadProfile() {
     let semaphore = DispatchSemaphore(value: 0)   // blocks the thread
     service.fetchProfile { result in
@@ -57,11 +64,13 @@ func loadProfile() {
     }
     semaphore.wait()
 }
+```
 
 --
 
 
 ✅ Compliant
+```swift
 struct ProfileView: View {
     @StateObject private var viewModel = ProfileViewModel()
 
@@ -74,8 +83,10 @@ struct ProfileView: View {
         .task { await viewModel.load() }
     }
 }
+```
 
 ❌ Non-compliant
+```swift
 struct ProfileView: View {
     @ObservedObject var viewModel = ProfileViewModel()  // recreated on redraw; should be @StateObject
 
@@ -83,3 +94,4 @@ struct ProfileView: View {
         VStack { AvatarView(url: viewModel.avatarURL); NameLabel(name: viewModel.displayName) }.padding().onAppear { DispatchQueue.main.async { UIApplication.shared.windows.first?.endEditing(true) } }  // cramped, UIKit reach-in, modifiers not on new lines
     }
 }
+```

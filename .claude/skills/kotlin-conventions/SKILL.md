@@ -11,9 +11,12 @@ description: "Check kotlin conventions. File must name .kt as the load trigger"
 
 - Collect flows in a lifecycle-aware way (repeatOnLifecycle / flowWithLifecycle) so collection stops when the UI is not visible. Hold UI state in a ViewModel, not in the Activity/Fragment, and never leak Context/View references into a ViewModel. In Compose, respect recomposition and remember state correctly.
 
+- Use Severity tags (HIGH / MEDIUM / LOW)
+
 ## Template
 
 ✅ Compliant
+```kotlin
 class UserProfile(
     val displayName: String,
     val isVerified: Boolean,
@@ -24,8 +27,10 @@ class UserProfile(
 
     fun fetchAvatar(): Uri? { ... }
 }
+```
 
 ❌ Non-compliant
+```kotlin
 class user_profile(
     val strDisplayName: String,   // abbreviation prefix + wrong style
     val verified: Boolean,        // boolean doesn't read as an assertion
@@ -34,10 +39,12 @@ class user_profile(
 
     fun GetAvatar(): Uri? { ... }  // function should be lowerCamelCase
 }
+```
 
 --
 
 ✅ Compliant
+```kotlin
 class ProfileViewModel(private val repo: ProfileRepository) : ViewModel() {
     fun loadProfile() {
         viewModelScope.launch {
@@ -46,8 +53,10 @@ class ProfileViewModel(private val repo: ProfileRepository) : ViewModel() {
         }
     }
 }
+```
 
 ❌ Non-compliant
+```kotlin
 class ProfileViewModel(private val repo: ProfileRepository) : ViewModel() {
     fun loadProfile() {
         GlobalScope.launch {                 // escapes structured concurrency; leaks past ViewModel
@@ -56,10 +65,12 @@ class ProfileViewModel(private val repo: ProfileRepository) : ViewModel() {
         }
     }
 }
+```
 
 --
 
 ✅ Compliant
+```kotlin
 class ProfileFragment : Fragment() {
     private val viewModel: ProfileViewModel by viewModels()
 
@@ -71,8 +82,10 @@ class ProfileFragment : Fragment() {
         }
     }
 }
+```
 
 ❌ Non-compliant
+```kotlin
 class ProfileFragment : Fragment() {
     private val viewModel = ProfileViewModel(applicationContext)  // Context leaked into ViewModel
 
@@ -82,5 +95,6 @@ class ProfileFragment : Fragment() {
         }
     }
 }
+```
 
 
