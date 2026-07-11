@@ -19,7 +19,7 @@ Produce a text:
 
 What you found in this PR. 
 Each your findings must be on the new line, has a flag which describes importance of this finding (🟢 - minor, 🟡 - medium, 🔴 - major) and concise suggestion to fix
-
+SEVERITY tags referenced
 Append a `## Conclusion` (Recommended to merge or needs work) section at the beginning.
 Append a `## Summary` section at the end.
 
