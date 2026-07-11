@@ -145,7 +145,7 @@ final class RideHistoryViewModel: ObservableObject {
 }
 ```
 
-This is a Swift file, so I'm applying the swift-conventions skill (naming, concurrency, UIKit/SwiftUI) plus security checks. This one is notably cleaner than #2.
+This is a Swift file, so I'm applying the Swift conventions (naming, concurrency, UIKit/SwiftUI) plus security checks. This one is notably cleaner than #2.
 
 ---
 Conclusion
