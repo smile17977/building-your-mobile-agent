@@ -1,0 +1,121 @@
+diff --git a/Sources/ProfileView.swift b/Sources/ProfileView.swift
+index 3a1f2c4..8b9e7a1 100644
+--- a/Sources/ProfileView.swift
++++ b/Sources/ProfileView.swift
+@@ -1,18 +1,38 @@
+ import SwiftUI
+
+ struct ProfileView: View {
+-    let user: User
++    let user: User
++    @State private var isEditing = false
+
+     var body: some View {
+-        Text(user.displayName)
++        VStack(alignment: .leading, spacing: 16) {
++            HStack {
++                AvatarView(url: user.avatarURL)
++                    .frame(width: 64, height: 64)
++                VStack(alignment: .leading) {
++                    Text(user.displayName)
++                        .font(.title2)
++                        .fontWeight(.semibold)
++                    Text(user.email)
++                        .font(.subheadline)
++                        .foregroundColor(.secondary)
++                }
++            }
++            Divider()
++            if isEditing {
++                EditProfileForm(user: user)
++            } else {
++                ProfileDetailList(user: user)
++            }
++        }
++        .padding()
++        .toolbar {
++            Button(isEditing ? "Done" : "Edit") {
++                isEditing.toggle()
++            }
++        }
+     }
+ }
+
+diff --git a/Sources/ProfileViewModel.swift b/Sources/ProfileViewModel.swift
+new file mode 100644
+index 0000000..c2d4f88
+--- /dev/null
++++ b/Sources/ProfileViewModel.swift
+@@ -0,0 +1,34 @@
++import Foundation
++import Combine
++
++@MainActor
++final class ProfileViewModel: ObservableObject {
++    @Published private(set) var user: User?
++    @Published private(set) var isLoading = false
++    @Published private(set) var error: Error?
++
++    private let userService: UserServiceProtocol
++    private var cancellables = Set<AnyCancellable>()
++
++    init(userService: UserServiceProtocol) {
++        self.userService = userService
++    }
++
++    func loadProfile(for userID: String) async {
++        isLoading = true
++        defer { isLoading = false }
++        do {
++            user = try await userService.fetchUser(id: userID)
++        } catch {
++            self.error = error
++        }
++    }
++
++    func updateDisplayName(_ name: String) async {
++        guard let current = user else { return }
++        do {
++            user = try await userService.updateUser(current, displayName: name)
++        } catch {
++            self.error = error
++        }
++    }
++}
+diff --git a/Tests/ProfileViewModelTests.swift b/Tests/ProfileViewModelTests.swift
+new file mode 100644
+index 0000000..f7a3b12
+--- /dev/null
++++ b/Tests/ProfileViewModelTests.swift
+@@ -0,0 +1,28 @@
++import XCTest
++@testable import MobileApp
++
++final class ProfileViewModelTests: XCTestCase {
++    private var sut: ProfileViewModel!
++    private var mockService: MockUserService!
++
++    override func setUp() {
++        super.setUp()
++        mockService = MockUserService()
++        sut = ProfileViewModel(userService: mockService)
++    }
++
++    override func tearDown() {
++        sut = nil
++        mockService = nil
++        super.tearDown()
++    }
++
++    func testLoadProfileSetsUser() async {
++        mockService.stubbedUser = User.fixture()
++        await sut.loadProfile(for: "user-123")
++        XCTAssertNotNil(sut.user)
++    }
++
++    func testLoadProfileSetsErrorOnFailure() async {
++        mockService.shouldThrow = true
++        await sut.loadProfile(for: "user-123")
++        XCTAssertNotNil(sut.error)
++    }
++}

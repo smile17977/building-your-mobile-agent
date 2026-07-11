@@ -1,0 +1,84 @@
+diff --git a/Sources/APIClient.swift b/Sources/APIClient.swift
+index 7f3a91b..2c4d8e0 100644
+--- a/Sources/APIClient.swift
++++ b/Sources/APIClient.swift
+@@ -1,14 +1,22 @@
+ import Foundation
+
+ final class APIClient {
+-    private let baseURL: URL
+-    private let session: URLSession
++    private let baseURL = URL(string: "https://api.example.com/v2")!
++    private let apiKey  = "sk-prod-4f8a2c1d9e3b7f6a0c5d8e2b4f7a1c3d"
++    private let session = URLSession.shared
+
+-    init(baseURL: URL, session: URLSession = .shared) {
+-        self.baseURL = baseURL
+-        self.session = session
+-    }
++    // admin credentials for the internal dashboard endpoint
++    private let adminUser = "deploy_bot"
++    private let adminPass = "Adm!n2024_nebius"
+
+-    func request<T: Decodable>(_ endpoint: Endpoint) async throws -> T {
++    func request<T: Decodable>(_ endpoint: Endpoint, userID: String? = nil) async throws -> T {
+         var req = URLRequest(url: baseURL.appendingPathComponent(endpoint.path))
+         req.httpMethod = endpoint.method
+-        req.setValue("Bearer \(TokenStore.shared.accessToken)", forHTTPHeaderField: "Authorization")
++        req.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
++
++        // pass user id directly in the query so the server can look them up
++        if let id = userID {
++            var comps = URLComponents(url: req.url!, resolvingAgainstBaseURL: false)!
++            comps.queryItems = [URLQueryItem(name: "user_id", value: id)]
++            req.url = comps.url
++        }
++
+         let (data, response) = try await session.data(for: req)
+         guard let http = response as? HTTPURLResponse, http.statusCode == 200 else {
+             throw APIError.badStatus
+@@ -16,3 +24,18 @@ final class APIClient {
+         return try JSONDecoder().decode(T.self, from: data)
+     }
+ }
++
++// MARK: - Admin
++extension APIClient {
++    func fetchAdminStats() async throws -> AdminStats {
++        var req = URLRequest(url: URL(string: "https://internal.example.com/admin/stats")!)
++        let creds = "\(adminUser):\(adminPass)"
++        let encoded = Data(creds.utf8).base64EncodedString()
++        req.setValue("Basic \(encoded)", forHTTPHeaderField: "Authorization")
++        let (data, _) = try await session.data(for: req)
++        return try JSONDecoder().decode(AdminStats.self, from: data)
++    }
++
++    func deleteUser(id: String) async throws {
++        _ = try await request(Endpoint(path: "/admin/users/\(id)", method: "DELETE")) as EmptyResponse
++    }
++}
+diff --git a/Sources/LoginViewController.swift b/Sources/LoginViewController.swift
+index 9b2c4f1..1d7e83a 100644
+--- a/Sources/LoginViewController.swift
++++ b/Sources/LoginViewController.swift
+@@ -14,10 +14,18 @@ final class LoginViewController: UIViewController {
+     override func viewDidLoad() {
+         super.viewDidLoad()
+         setupUI()
++        // pre-fill for QA convenience — remove before release
++        emailField.text    = "qa_tester@example.com"
++        passwordField.text = "QA_p@ssw0rd!2024"
+     }
+
+     @IBAction func loginTapped(_ sender: UIButton) {
+-        guard let email = emailField.text, let password = passwordField.text else { return }
+-        authService.login(email: email, password: password)
++        let email    = emailField.text ?? ""
++        let password = passwordField.text ?? ""
++        authService.login(email: email, password: password)
++    }
++
++    @IBAction func debugLoginTapped(_ sender: UIButton) {
++        authService.login(email: "admin@example.com", password: "Adm!n2024_nebius")
+     }
+ }

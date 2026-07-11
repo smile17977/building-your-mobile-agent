@@ -1,0 +1,110 @@
+diff --git a/Sources/notificationsManager.swift b/Sources/notificationsManager.swift
+new file mode 100644
+index 0000000..a4c8d73
+--- /dev/null
++++ b/Sources/notificationsManager.swift
+@@ -0,0 +1,62 @@
++import Foundation
++import UserNotifications
++
++// manages all push notifications for the app
++class notificationsManager {
++
++    static var Instance = notificationsManager()
++
++    var Granted = false
++    var badge_count = 0
++    var pendingNotifications = [UNNotificationRequest]()
++
++    func RequestPermission(completion: @escaping (Bool) -> Void) {
++        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) {
++            granted, error in
++            self.Granted = granted
++            completion(granted)
++        }
++    }
++
++    func ScheduleNotification(Title: String, Body: String, Date: Date) {
++        let content = UNMutableNotificationContent()
++        content.title = Title
++        content.body = Body
++        content.badge = NSNumber(value: self.badge_count + 1)
++
++        let components = Calendar.current.dateComponents([.year,.month,.day,.hour,.minute], from: Date)
++        let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: false)
++
++        let id = NSUUID().uuidString
++        let req = UNNotificationRequest(identifier: id, content: content, trigger: trigger)
++
++        UNUserNotificationCenter.current().add(req) { error in
++            if error != nil {
++                print("error scheduling notification: \(error!)")
++            } else {
++                self.pendingNotifications.append(req)
++                self.badge_count += 1
++            }
++        }
++    }
++
++    func CancelAll() {
++        UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
++        pendingNotifications.removeAll()
++        badge_count = 0
++    }
++
++    func GetPending(completion: @escaping ([UNNotificationRequest]) -> Void) {
++        UNUserNotificationCenter.current().getPendingNotificationRequests { requests in
++            completion(requests)
++        }
++    }
++
++    func update_badge(count: Int) {
++        badge_count = count
++        DispatchQueue.main.async {
++            UIApplication.shared.applicationIconBadgeNumber = count
++        }
++    }
++}
+diff --git a/Sources/feed_cell.swift b/Sources/feed_cell.swift
+new file mode 100644
+index 0000000..b3e9c01
+--- /dev/null
++++ b/Sources/feed_cell.swift
+@@ -0,0 +1,35 @@
++import UIKit
++
++class feed_cell: UITableViewCell {
++
++    @IBOutlet var TitleLabel : UILabel!
++    @IBOutlet var SubtitleLabel : UILabel!
++    @IBOutlet var ThumbImage : UIImageView!
++    @IBOutlet var TimeStampLabel: UILabel!
++
++    var DATA: [String: Any]?
++
++    override func awakeFromNib() {
++        super.awakeFromNib()
++    }
++
++    func Configure(data: [String: Any]) {
++        DATA = data
++        TitleLabel.text    = data["title"] as? String
++        SubtitleLabel.text = data["subtitle"] as? String
++        TimeStampLabel.text = data["ts"] as? String
++
++        if let url = data["thumb"] as? String {
++            LoadImage(urlString: url)
++        }
++    }
++
++    func LoadImage(urlString: String) {
++        guard let url = URL(string: urlString) else { return }
++        URLSession.shared.dataTask(with: url) { data, _, _ in
++            if let data = data, let img = UIImage(data: data) {
++                DispatchQueue.main.async {
++                    self.ThumbImage.image = img
++                }
++            }
++        }.resume()
++    }
++}
