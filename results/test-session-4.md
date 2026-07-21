@@ -1,74 +1,53 @@
 # Test session 4
 
- /review-pr 3 in https://github.com/nebius-academy-templates/mobile-pr-review-practice
+  /review-pr 3 in https://github.com/nebius-academy-templates/mobile-pr-review-practice
 
-I'll review PR #3 in that repository. Let me start by fetching the PR.
+I'll review PR #3. Let me start by fetching the PR details.
 
-  Called github 3 times
+  Called github 2 times
 
-PR #3 has one Kotlin file. Let me apply the review skills. I'll load the kotlin-conventions skill (.kt file trigger) and run the specialized reviewers in parallel.
+PR #3 has changes (18 additions in src/PaymentService.kt), so it's not empty. Now let me delegate to the three reviewers concurrently.
 
-⏺ Skill(kotlin-conventions)
-Successfully loaded skill
+⏺ 3 agents finished
+style-reviewer (Style review of PaymentService.kt) · 4 tool uses · 4.7k tokens
+⎿  Done
+security-reviewer (Security review of PaymentService.kt) · 1 tool use · 3.2k tokens
+⎿  Done
+architecture-reviewer (Architecture review of PaymentService.kt) · 4 tool uses · 4.6k tokens
+⎿  Done
 
-⏺ 2 background agents launched (↓ to manage)
-security-reviewer (Security review of PaymentService.kt)
-architecture-reviewer (Architecture review of PaymentService.kt)
+⏺ All three reviewers have reported. Here is the compiled review.
 
-I have the kotlin-conventions loaded. The three reviewers are running in the background. I'll wait for their results before compiling the review.
+  ---
+  PR Review — #3: Add payment service
 
-✻ Waiting for 3 background agents to finish
+  Repo: nebius-academy-templates/mobile-pr-review-practice
+  File changed: src/PaymentService.kt (+18)
+  Author: @ispaniuktripleten
 
-⏺ Agent "Security review of PaymentService.kt" finished · 10s
+  ---
+  🔴 Security
 
-Security reviewer done. Waiting on architecture and style reviewers.
+  - [HIGH] Hardcoded live API key (line 8) — val API_KEY = "sk-live-..." embeds a production secret in source. It will land in Git history and be extractable from the compiled APK. This is the blocking issue. Move it to secure config (e.g. BuildConfig sourced from an untracked properties file / secrets manager) and rotate the exposed key immediately, since it's now been committed.
+  - [MEDIUM] No input validation in charge() (line 15) — amount and token are used unvalidated. Add require(amount > 0) and require(token.isNotBlank()).
+- [MEDIUM] No input validation in charge() (line 15) — amount and token are used unvalidated. Add require(amount > 0) and require(token.isNotBlank()).
+- [MEDIUM] Key transmitted on every request (line 16) — the key is held in memory and sent in the Authorization header on each call; compounds the hardcoding risk.
 
-✻ Waiting for 2 background agents to finish
+🟠 Architecture
 
-⏺ Agent "Style review of PaymentService.kt" finished · 13s
+- [HIGH] Direct Retrofit instantiation (lines 10–13) — the HTTP client is built inside the class, blocking DI and testability. Inject the Retrofit/API interface instead.
+- [HIGH] Missing repository layer — PaymentService implements networking directly; per MVVM it should sit behind a repository that ViewModels depend on.
+- [LOW] No result/error abstraction (charge() returns Unit) — return a Result type or use coroutines/Flow so ViewModels can manage state.
 
-Style reviewer done. Waiting on the architecture reviewer.
+🟡 Style
 
-✻ Waiting for 1 background agent to finish
-
-⏺ Agent "Architecture review of PaymentService.kt" finished · 27s
-
-All three reviewers have completed. Here is the compiled review.
-
----
-PR #3 Review — Add payment service
-
-File reviewed: src/PaymentService.kt (new, +18)
-
-▎ ⚠️ This PR introduces a live production credential in source code. This must be resolved before merge, and the leaked key should be treated as compromised and rotated immediately.
-
-🔒 Security
-
-- [HIGH] Hardcoded live API key — src/PaymentService.kt:8
-val API_KEY = "sk-live-..." is a live (sk-live-) payment credential committed to source. It compiles into the APK and is now in git history — anyone with repo or binary access can extract it and charge real transactions. Rotate the key now, remove it from the code, and load it from a backend proxy, BuildConfig field, or the Android Keystore. Never route a live payment secret through the client.
-- [HIGH] Missing TLS hardening — src/PaymentService.kt:10-13
-The Retrofit client has no certificate pinning, no explicit TLS enforcement, and no timeouts, leaving the payment endpoint open to MITM. Add certificate pinning and timeout configuration.
-- [MEDIUM] No input validation in charge() — src/PaymentService.kt:15
-amount: Int and token: String are unvalidated — negative/zero amounts and empty/malformed tokens flow straight through. Validate amount > 0 and a non-empty, well-formed token.
-
-🏗️ Architecture
-
-- [HIGH] Direct Retrofit instantiation (no DI) — src/PaymentService.kt:10-13
-The class builds its own Retrofit instance instead of receiving it via dependency injection. This tightly couples transport to the service and makes it unmockable in tests. Provide the client through DI (Hilt/Dagger).
-- [HIGH] No repository abstraction — src/PaymentService.kt:6
-Network transport and payment logic live in one class with no repository layer. Expected flow: ViewModel → PaymentRepository (interface) → PaymentService (data source).
-
-🎨 Style (kotlin-conventions)
-
-- [MEDIUM] API_KEY naming/const violation — src/PaymentService.kt:8
-A class instance property named in UPPER_SNAKE_CASE. Instance properties use lowerCamelCase (apiKey); true constants belong in a companion object as private const val. (Moot once the key is removed per the security finding.)
-
-📝 Other
-
-- [LOW] charge() is an unimplemented stub — src/PaymentService.kt:15-17
-The body is only a comment, so request signing, error handling, and response validation can't be assessed. Complete or mark clearly as WIP.
-
-Summary: 4 HIGH, 2 MEDIUM, 1 LOW. The hardcoded live key is a blocker — do not merge as-is.
+- [MEDIUM] API_KEY placement/modifier (line 8) — an instance val in UPPER_SNAKE_CASE. Constants belong in a companion object as const val (though per the security finding, it shouldn't be a source-level constant at all).
+- [LOW] Blank line after class opening brace (line 7) — non-standard formatting.
 
 ---
-I have not posted anything. Would you like me to post this as a review comment on PR #3? I won't post until you confirm.
+Summary
+
+This PR should not be merged as-is. The hardcoded live payment API key is a critical, must-fix issue (rotate + remove), and the class also needs restructuring for DI/repository pattern and input validation.
+
+---
+Would you like me to post this as a comment on PR #3? I won't post anything until you confirm.
