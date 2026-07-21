@@ -10,5 +10,5 @@ disable-model-invocation: true
 2. Delegate style-reviewer style checking.
 3. Delegate security-reviewer security checking.
 4. Delegate architecture-reviewer architecture checking.
-5. Compile findings into the output format, present them, and ask for 
+5. Consolidate the three reviewers' outputs (style, security, architecture) into a single review, grouped by category, and present it to the user. Then ask the user for explicit confirmation before posting.
 6. Only post on yes or post.

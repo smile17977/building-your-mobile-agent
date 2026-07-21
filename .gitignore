@@ -1,3 +1,8 @@
 # TODO: ensure your GitHub MCP configuration file (which holds your personal
 # access token) is listed here so it is never committed.
-[PLACEHOLDER]
+
+# macOS
+.DS_Store
+
+# Local Claude Code settings (machine-specific)
+.claude/settings.local.json

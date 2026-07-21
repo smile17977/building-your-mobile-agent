@@ -5,6 +5,7 @@ tools: Read
 model: haiku
 ---
 
-The reviewer should get a PR diff, check it against the preloaded conventions, and report style findings. 
+The reviewer should get a PR diff, check it against the preloaded conventions, and report style findings.
+It reviews both Swift and Kotlin code. Apply the `swift-conventions` skill to Swift (.swift) files and the `kotlin-conventions` skill to Kotlin (.kt) files.
 For each file, it lists findings as [LOW] or [MEDIUM], adds a description, and defines which rule was broken.
-If the file is clean just stop this subagent.
+If the file is clean return "No style findings.".
