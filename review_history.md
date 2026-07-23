@@ -9,3 +9,8 @@
 2026-07-22 | PR-02 | ViewModel calls URLSession directly, bypassing repository pattern and DI | HIGH
 2026-07-22 | PR-03 | Hardcoded live API token in PaymentService | HIGH
 2026-07-22 | PR-05 | Hardcoded live client secret in CheckoutViewModel, sent from client | HIGH
+2026-07-23 | PR-01 | Silent error handling — try? swallows repository failures, no error state | MEDIUM
+2026-07-23 | PR-02 | ViewModel calls URLSession directly, bypassing repository pattern and DI | HIGH
+2026-07-23 | PR-03 | Hardcoded live payment API key in PaymentService | HIGH
+2026-07-23 | PR-04 | ViewModel calls ApiClient directly, bypassing repository pattern | HIGH
+2026-07-23 | PR-05 | Hardcoded live client secret in CheckoutViewModel, sent from client | HIGH
