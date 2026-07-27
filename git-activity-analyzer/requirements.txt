@@ -1,0 +1,8 @@
+# Wave 1 (local git) needs NO third-party packages — gitlib.py + cli.py run on
+# the Python stdlib and the `git` CLI alone.
+#
+# The MCP server wrapper (server.py) needs the MCP SDK:
+mcp>=1.2.0
+#
+# Wave 2 (CI tools) will add a provider client, e.g.:
+# httpx>=0.27
